@@ -34,7 +34,7 @@ public class UIRoom : UIRefreshBase
     {
         if (inputChat.text == string.Empty)
         {
-            OpenUI<UIPopUpButton>().SetMessage("¸Ş½ÃÁö¸¦ ÀÔ·ÂÇÏ¼¼¿ä.");
+            OpenUI<UIPopUpButton>().SetMessage("ë©”ì‹œì§€ë¥¼ ì…ë ¥í•˜ì„¸ìš”.");
             return;
         }
 
@@ -62,19 +62,19 @@ public class UIRoom : UIRefreshBase
 
     public void AddMember(string nickname)
     {
-        NewChat.SetNotice(Color.green, $"{nickname}´ÔÀÌ ÀÔÀåÇÏ¼Ì½À´Ï´Ù.");
+        NewChat.SetNotice(Color.green, $"{nickname}ë‹˜ì´ ì…ì¥í•˜ì…¨ìŠµë‹ˆë‹¤.");
         RefreshUI();
     }
 
     public void RemoveMember(string nickname)
     {
-        NewChat.SetNotice(Color.magenta, $"{nickname}´ÔÀÌ ÅğÀåÇÏ¼Ì½À´Ï´Ù.");
+        NewChat.SetNotice(Color.magenta, $"{nickname}ë‹˜ì´ í‡´ì¥í•˜ì…¨ìŠµë‹ˆë‹¤.");
         RefreshUI();
     }
 
     public void UpdateCount(int curCount)
     {
-        txtCount.text = $"Âü°¡ ÀÎ¿ø ({curCount}/{capacity})";
+        txtCount.text = $"ì°¸ê°€ ì¸ì› ({curCount}/{capacity})";
     }
 
     UIChat NewChat
