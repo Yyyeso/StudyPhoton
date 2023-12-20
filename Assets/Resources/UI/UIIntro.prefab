@@ -14,11 +14,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 435114811281171097, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
       propertyPath: m_fontSize
-      value: 50
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 435114811281171097, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
       propertyPath: m_fontSizeBase
-      value: 50
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 5182298777795581959, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
       propertyPath: m_Name
@@ -54,11 +54,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7108601001606434264, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 450
+      value: 350
       objectReference: {fileID: 0}
     - target: {fileID: 7108601001606434264, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 130
+      value: 95
       objectReference: {fileID: 0}
     - target: {fileID: 7108601001606434264, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -111,6 +111,10 @@ PrefabInstance:
     - target: {fileID: 7108601001606434265, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
       propertyPath: m_Name
       value: btnConnect
+      objectReference: {fileID: 0}
+    - target: {fileID: 7108601001606434267, guid: 0cca1a26997d0fc4caa6c9a1feb514d4, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 2.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -434,11 +438,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1692768704375200794, guid: d6a105506a701a3418010bde710e79b5, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 550
+      value: 610
       objectReference: {fileID: 0}
     - target: {fileID: 1692768704375200794, guid: d6a105506a701a3418010bde710e79b5, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 110
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 1692768704375200794, guid: d6a105506a701a3418010bde710e79b5, type: 3}
       propertyPath: m_LocalPosition.x

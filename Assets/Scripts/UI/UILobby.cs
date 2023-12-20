@@ -1,80 +1,78 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
-using System.Collections.Generic;
-using Photon.Pun;
 using Photon.Realtime;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
+using System.Collections.Generic;
 
 public class UILobby : UIBase
 {
     [SerializeField] private TMP_Text txtNickname;
-    [SerializeField] private RectTransform roomParent;
-    [SerializeField] private TMP_InputField inputRoomName;
-    [SerializeField] private Button btnCreateRoom;
+
     List<GameObject> objRoomList = new();
+    [SerializeField] private RectTransform roomParent;
+
+    int maxPlayers = 2;
+    [SerializeField] private TMP_Text txtMaxPlayers;
+    [SerializeField] private Button btnMinus;
+    [SerializeField] private Button btnPlus;
+
+    [SerializeField] private TMP_InputField inputRoomName;
+    [SerializeField] private TMP_InputField inputRoomInfo;
+    [SerializeField] private Button btnCreateRoom;
+
 
     void Start()
     {
         btnCreateRoom.onClick.AddListener(CreateRoom);
-        txtNickname.text = $"어서오세요 {GameData.Instance.NickName}님!";
+        btnMinus.onClick.AddListener(() => { SetMaxPlayers(--maxPlayers); });
+        btnPlus.onClick.AddListener(() => { SetMaxPlayers(++maxPlayers); });
+        txtNickname.text = $"어서오세요. {GameData.Instance.NickName} 님!";
+        SetMaxPlayers(2);
     }
 
     void CreateRoom()
     {
-        if (inputRoomName.text == "" || inputRoomName.text == string.Empty)
+        if (inputRoomName.text == string.Empty)
         {
-            PopUpMessage(message: "생성할 방 제목을 입력하세요.", title: "방 만들기 실패");
+            OpenUI<UIPopUpButton>().SetMessage(message: "생성할 방 제목을 입력하세요.", title: "방 만들기 실패");
             return;
         }
 
         UIManager.Instance.OnLoading();
-
-        string roomName = PhotonNetwork.LocalPlayer.UserId + "_" + DateTime.UtcNow.ToFileTime();
-        string[] propertiesLobby = new string[] { $"{CustomKey.RoomName}", $"{CustomKey.RoomMaster}" };
-        Hashtable roomProperties = new()
-        {
-            { $"{CustomKey.RoomName}", inputRoomName.text },
-            { $"{CustomKey.RoomMaster}", GameData.Instance.NickName }
-        };
-        RoomOptions options = new()
-        {
-            IsVisible = true,
-            IsOpen = true,
-            MaxPlayers = GameData.Instance.MaxPlayers,
-            CustomRoomProperties = roomProperties,
-            CustomRoomPropertiesForLobby = propertiesLobby
-        };
-
-        NetworkManager.Instance.CreateRoom(roomName, options);
+        NetworkManager.Instance.CreateRoom(inputRoomName.text, inputRoomInfo.text, maxPlayers);
     }
 
     public void SetRoomList(Dictionary<string, RoomInfo> roomList)
     {
         ClearRoom();
-        foreach (var roomData in roomList)
-        {
-            AddRoom().Setup(roomData.Value);
-        }
+        foreach (var roomData in roomList) { AddRoom().Setup(roomData.Value); }
     }
 
     UIRoomInfo AddRoom()
     {
         var go = ResourceManager.Instance.InstantiateUI<UIRoomInfo>("SubItem/" + nameof(UIRoomInfo), roomParent);
         objRoomList.Add(go.gameObject);
-
         return go;
     }
 
     void ClearRoom()
     {
-        foreach (var item in objRoomList)
-        {
-            Destroy(item);
-        }
+        foreach (var item in objRoomList) { Destroy(item); }
         objRoomList.Clear();
     }
 
-    UIPopUpButton PopUpMessage(string message, string title = "") => OpenUI<UIPopUpButton>().SetMessage(message, title);
+    void SetMaxPlayers(int value)
+    {
+        print(value);
+        maxPlayers = value;
+        SetButtonState(btnMinus, !(value <= 2));
+        SetButtonState(btnPlus, !(value >= 10));
+        txtMaxPlayers.text = maxPlayers.ToString();
+    }
+
+    void SetButtonState(Button button, bool enabled)
+    {
+        button.enabled = enabled;
+        button.gameObject.GetComponent<Image>().color = enabled ? Color.white : Color.gray;
+    }
 }

@@ -6,15 +6,10 @@ public class UILoading : UIBase
 {
     [SerializeField] private TMP_Text txtLoading;
 
-    public void Setup()
-    {
-        StartCoroutine(nameof(LoadingCoroutine));
-    }
 
-    public void Stop()
-    {
-        StopCoroutine(nameof(LoadingCoroutine));
-    }
+    public void Setup() => StartCoroutine(nameof(LoadingCoroutine));
+
+    public void Stop() => StopCoroutine(nameof(LoadingCoroutine));
 
     IEnumerator LoadingCoroutine()
     {

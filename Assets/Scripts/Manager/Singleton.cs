@@ -12,6 +12,7 @@ public class Singleton<T> : MonoBehaviour where T : Component
             if (parent == null)
             {
                 parent = GameObject.Find("[Singleton]");
+
                 if (parent == null)
                 {
                     parent = new GameObject("[Singleton]");
@@ -28,10 +29,9 @@ public class Singleton<T> : MonoBehaviour where T : Component
             if (disposable == null)
             {
                 disposable = GameObject.Find("[Disposable]");
+
                 if (disposable == null)
-                {
-                    disposable = new GameObject("[Disposable]");
-                }
+                { disposable = new GameObject("[Disposable]"); }
             }
             return disposable.transform;
         }
@@ -45,10 +45,7 @@ public class Singleton<T> : MonoBehaviour where T : Component
     {
         get
         {
-            if (shuttingDown)
-            {
-                return default;
-            }
+            if (shuttingDown) { return default; }
 
             if (_instance == null)
             {
@@ -57,11 +54,8 @@ public class Singleton<T> : MonoBehaviour where T : Component
                 if (_instance == null)
                 {
                     _instance = new GameObject { name = $"@{typeof(T)}" }.AddComponent<T>();
-
-                    if(_instance.GetComponent<IDestroy>() == null)
-                        _instance.transform.SetParent(Parent);
-                    else
-                        _instance.transform.SetParent(Disposable);
+                    var root = (_instance.GetComponent<IDestroy>() == null) ? Parent : Disposable;
+                    _instance.transform.SetParent(root);
                 }
             }
 
@@ -70,18 +64,9 @@ public class Singleton<T> : MonoBehaviour where T : Component
     }
 
 
-    public virtual void Awake()
-    {
-        Init();
-    }
+    public virtual void Awake() => Init();
 
-    protected virtual void Init()
-    {
-        print($"Init: {typeof(T)}");
-    }
+    protected virtual void Init() => print($"Init: {typeof(T)}");
 
-    private void OnApplicationQuit()
-    {
-        shuttingDown = true;
-    }
+    private void OnApplicationQuit() => shuttingDown = true;
 }

@@ -1,11 +1,11 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 public class UIChat : UIBase
 {
     public void SetMessage(string nickname, string message)
     {
-        string color = (nickname == GameData.Instance.NickName) ? "<color=#9BBFEA>" : "<color=#BDEA9B>";
+        string color = (nickname == GameData.Instance.NickName) ? "<color=#FFCE53>" : "<color=#5DF4FF>";
         GetComponent<TMP_Text>().text = $"{color}{nickname}</color>: {message}";
     }
 

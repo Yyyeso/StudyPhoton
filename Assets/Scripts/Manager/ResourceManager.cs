@@ -3,37 +3,15 @@ using UnityEngine;
 
 public class ResourceManager : Singleton<ResourceManager>
 {
-    public T Load<T>(string path) where T : Object
-    {
-        return Resources.Load<T>(path);
-    }
+    public T Load<T>(string path) where T : Object => Resources.Load<T>(path);
 
-    public Sprite LoadSprite(string path)
-    {
-        return Load<Sprite>("Sprites/" + path);
-    }
+    public Sprite LoadSprite(string path) => Load<Sprite>("Sprites/" + path);
 
-    public GameObject Instantiate(string path, Transform parent = null)
-    {
-        var go = Load<GameObject>(path);
-        return Instantiate(go, parent);
-    }
+    public GameObject Instantiate(string path, Transform parent = null) => Instantiate(Load<GameObject>(path), parent);
 
-    public T Instantiate<T>(string path, Transform parent = null) where T : Component
-    {
-        return Instantiate("Prefabs/" + path, parent).GetComponent<T>();
-    }
+    public T Instantiate<T>(string path, Transform parent = null) where T : Component => Instantiate("Prefabs/" + path, parent).GetComponent<T>();
 
-    public T InstantiateUI<T>(string path, Transform parent = null) where T : UIBase
-    {
-        return Instantiate("UI/" + path, parent).GetComponent<T>();
-    }
+    public T InstantiateUI<T>(string path, Transform parent = null) where T : UIBase => Instantiate("UI/" + path, parent).GetComponent<T>();
 
-    public RpcController InstantiatePlayer()
-    {
-        var player = PhotonNetwork.Instantiate("Player", Vector3.zero, Quaternion.identity);
-        player.name = $"Player({GameData.Instance.NickName})";
-
-        return player.GetComponent<RpcController>();
-    }
+    public RpcController InstantiatePlayer() => PhotonNetwork.Instantiate("Player", Vector3.zero, Quaternion.identity).GetComponent<RpcController>();
 }

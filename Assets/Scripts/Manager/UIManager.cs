@@ -27,10 +27,8 @@ public class UIManager : Singleton<UIManager>
     private T CreateUI<T>() where T : UIBase
     {
         string key = typeof(T).Name;
-
         T ui = ResourceManager.Instance.InstantiateUI<T>(key, UIContents);
         UI.Add(key, ui);
-
         return ui;
     }
 
@@ -52,18 +50,12 @@ public class UIManager : Singleton<UIManager>
     public void CloseUI<T>()
     {
         if (IsUIExist<T>())
-        {
-            _ui.gameObject.SetActive(false);
-        }
+        { _ui.gameObject.SetActive(false); }
     }
 
     public T GetUI<T>() where T : UIBase
     {
-        if (IsUIExist<T>())
-        {
-            return (T)_ui;
-        }
-
+        if (IsUIExist<T>()) { return (T)_ui; }
         return default;
     }
 
@@ -88,8 +80,7 @@ public class UIManager : Singleton<UIManager>
 
     private void SetEventSystem()
     {
-        if (GameObject.Find(nameof(EventSystem)) != null)
-        { return; }
+        if (GameObject.Find(nameof(EventSystem)) != null) { return; }
 
         GameObject eventSystem = new (nameof(EventSystem));
         eventSystem.AddComponent<EventSystem>();

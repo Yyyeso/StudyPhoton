@@ -1,20 +1,36 @@
-using Photon.Pun;
-using System.Collections.Generic;
 using TMPro;
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class UIRoom : UIRefreshBase
 {
+    int maxPlayers;
     [SerializeField] private TMP_Text txtCount;
+    [SerializeField] private TMP_Text txtMember;
+
     [SerializeField] private Button btnExit;
     [SerializeField] private Button btnSend;
+
+    UIChat NewChat
+    {
+        get
+        {
+            var chat = ResourceManager.Instance.InstantiateUI<UIChat>("SubItem/UIChat", chatParent);
+            chatLog.Add(chat.gameObject);
+            if (chatLog.Count >= 30) chatLog.RemoveAt(0);
+            return chat;
+        }
+    }
+    List<GameObject> chatLog = new();
+    [SerializeField] private Color enterColor;
+    [SerializeField] private Color leaveColor;
     [SerializeField] private TMP_InputField inputChat;
     [SerializeField] private RectTransform chatParent;
-    List<GameObject> chatLog = new();
 
-    int capacity = 10;
-    GameData data;
+    GameData data = null;
+
 
     private void Start()
     {
@@ -22,36 +38,38 @@ public class UIRoom : UIRefreshBase
         btnExit.onClick.AddListener(ExitRoom);
     }
 
-    public UIRoom Setup(int curCount, int capacity)
-    {
-        data = GameData.Instance;
-        this.capacity = capacity;
-        UpdateCount(curCount);
-
-        return this;
-    }
     void SendChat()
     {
         if (inputChat.text == string.Empty)
         {
-            OpenUI<UIPopUpButton>().SetMessage("메시지를 입력하세요.");
+            OpenUI<UIPopUpButton>().SetMessage(message: "메시지를 입력하세요.");
             return;
         }
 
         string message = inputChat.text;
         inputChat.text = string.Empty;
-
         data.Player.PV.RPC(nameof(data.Player.UpdateChatLog), RpcTarget.All, data.NickName, message);
     }
+
     void ExitRoom()
     {
-        foreach (var item in chatLog)
-        { Destroy(item); }
-        chatLog.Clear();
-
-        inputChat.text = string.Empty;
+        UIManager.Instance.OnLoading();
+        ClearChat();
         CloseUI();
         NetworkManager.Instance.LeaveRoom();
+    }
+
+    public void Setup(int maxPlayers, int playerCount, string memberList)
+    {
+        if (data == null) { data = GameData.Instance; }
+        this.maxPlayers = maxPlayers;
+        UpdateMemberList(playerCount, memberList);
+    }
+
+    public void UpdateMemberList(int curCount, string memberList)
+    {
+        txtCount.text = $"참가 인원 ({curCount}/{maxPlayers})";
+        txtMember.text = memberList;
     }
 
     public void UpdateChatLog(string nickname, string message)
@@ -60,30 +78,22 @@ public class UIRoom : UIRefreshBase
         RefreshUI();
     }
 
-    public void AddMember(string nickname)
+    public void NoticeOnPlayerEntered(string nickname)
     {
-        NewChat.SetNotice(Color.green, $"{nickname}님이 입장하셨습니다.");
+        NewChat.SetNotice(enterColor, $"{nickname} 님이 입장하셨습니다.");
         RefreshUI();
     }
 
-    public void RemoveMember(string nickname)
+    public void NoticeOnPlayerLeft(string nickname)
     {
-        NewChat.SetNotice(Color.magenta, $"{nickname}님이 퇴장하셨습니다.");
+        NewChat.SetNotice(leaveColor, $"{nickname} 님이 퇴장하셨습니다.");
         RefreshUI();
     }
 
-    public void UpdateCount(int curCount)
+    void ClearChat()
     {
-        txtCount.text = $"참가 인원 ({curCount}/{capacity})";
-    }
-
-    UIChat NewChat
-    {
-        get 
-        { 
-            var chat = ResourceManager.Instance.InstantiateUI<UIChat>("SubItem/UIChat", chatParent);
-            chatLog.Add(chat.gameObject);
-            return chat;
-        }
+        inputChat.text = string.Empty;
+        foreach (var item in chatLog) { Destroy(item); }
+        chatLog.Clear();
     }
 }

@@ -1,17 +1,15 @@
-using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Collections.Generic;
 
 public class GameData : Singleton<GameData>
 {
-    #region Player Info
     public string NickName { get; set; } = null;
-    public PhotonView PV { get; set; }
+
     public RpcController Player { get; set; }
 
     public bool IsMaster => PhotonNetwork.LocalPlayer.IsMasterClient;
-    #endregion
-    public int MaxPlayers => 6;
+
     public Dictionary<string, RoomInfo> RoomList { get; set; } = new();
 }
 
@@ -19,6 +17,7 @@ public class GameData : Singleton<GameData>
 public enum CustomKey
 {
     RoomName,
+    RoomInfo,
     RoomMaster
 }
 #endregion

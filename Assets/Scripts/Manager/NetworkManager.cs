@@ -1,7 +1,10 @@
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using System;
+using System.Text;
 using System.Collections.Generic;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
@@ -68,12 +71,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.LocalPlayer.NickName = data.NickName;
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.JoinLobby();
+        ui.CloseUI<UIIntro>();
     }
 
     public override void OnJoinedLobby()
     {
         base.OnJoinedLobby();
-        ui.CloseUI<UIIntro>();
         ui.OpenUI<UILobby>();
         ui.CompleteLoading();
     }
@@ -100,27 +103,46 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         UpdateLobby(data.RoomList);
     }
 
-    bool IsClosed(RoomInfo room)
-    {
-        return (room.RemovedFromList || room.MaxPlayers == 0 || room.PlayerCount == 0 || !room.IsOpen);
-    }
+    bool IsClosed(RoomInfo room) => (room.RemovedFromList || room.MaxPlayers == 0 || room.PlayerCount == 0 || !room.IsOpen);
 
-    void UpdateLobby(Dictionary<string, RoomInfo> roomList)
-    {
-        ui.GetUI<UILobby>().SetRoomList(roomList);
-    }
+    void UpdateLobby(Dictionary<string, RoomInfo> roomList) => ui.GetUI<UILobby>().SetRoomList(roomList);
     #endregion
 
     #region Create Room
-    public void CreateRoom(string roomName, RoomOptions options) => PhotonNetwork.CreateRoom(roomName, options);
-
-    public override void OnCreatedRoom()
+    public void CreateRoom(string roomName, string roomInfo, int maxPlayers)
     {
-        ui.CloseUI<UILobby>();
-        ui.CompleteLoading();
+        Hashtable roomProperties = new()
+        {
+            { $"{CustomKey.RoomName}", roomName },
+            { $"{CustomKey.RoomInfo}", roomInfo } ,
+            { $"{CustomKey.RoomMaster}", data.NickName }
+        };
+        string[] roomPropertiesForLobby = new string[] 
+        {
+            $"{CustomKey.RoomName}",
+            $"{CustomKey.RoomInfo}" ,
+            $"{CustomKey.RoomMaster}"
+        };
+
+        string roomKey = PhotonNetwork.LocalPlayer.UserId + "_" + DateTime.UtcNow.ToFileTime();
+        RoomOptions options = new()
+        {
+            IsVisible = true,
+            IsOpen = true,
+            MaxPlayers = maxPlayers,
+            CustomRoomProperties = roomProperties,
+            CustomRoomPropertiesForLobby = roomPropertiesForLobby
+        };
+        PhotonNetwork.CreateRoom(roomKey, options);
     }
 
-    public override void OnCreateRoomFailed(short returnCode, string message) => ui.OpenUI<UIPopUpButton>().SetMessage(message: message, title: "방 만들기 실패");
+    public override void OnCreatedRoom() => ui.CloseUI<UILobby>();
+
+    public override void OnCreateRoomFailed(short returnCode, string message)
+    {
+        ui.CompleteLoading();
+        ui.OpenUI<UIPopUpButton>().SetMessage(message: message, title: "방 만들기 실패");
+    }
     #endregion
 
     #region Join Room
@@ -130,7 +152,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         data.Player = ResourceManager.Instance.InstantiatePlayer();
         var room = PhotonNetwork.CurrentRoom;
-        ui.OpenUI<UIRoom>().Setup(room.PlayerCount, room.MaxPlayers);
+        ui.OpenUI<UIRoom>().Setup(room.MaxPlayers, room.PlayerCount, GetMemberList(room.Players));
+        ui.CompleteLoading();
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
@@ -139,13 +162,17 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (!data.IsMaster) return;
 
         var room = PhotonNetwork.CurrentRoom;
-        data.Player.PV.RPC(nameof(data.Player.AddMember), RpcTarget.All, newPlayer.NickName);
-        data.Player.PV.RPC(nameof(data.Player.UpdateCount), RpcTarget.All, room.PlayerCount);
+        data.Player.PV.RPC(nameof(data.Player.NoticeOnPlayerEntered), RpcTarget.All, newPlayer.NickName);
+        data.Player.PV.RPC(nameof(data.Player.UpdateMemberList), RpcTarget.All, room.PlayerCount, GetMemberList(room.Players));
 
         if (room.PlayerCount == room.MaxPlayers) { room.IsOpen = false; }
     }
 
-    public override void OnJoinRoomFailed(short returnCode, string message) => ui.OpenUI<UIPopUpButton>().SetMessage(message: message, title: "방 참가 실패");
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        ui.CompleteLoading();
+        ui.OpenUI<UIPopUpButton>().SetMessage(message: message, title: "방 참가 실패");
+    }
     #endregion
 
     #region LeaveRoom
@@ -157,10 +184,17 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (!data.IsMaster) return;
 
         var room = PhotonNetwork.CurrentRoom;
-        data.Player.PV.RPC(nameof(data.Player.RemoveMember), RpcTarget.All, otherPlayer.NickName);
-        data.Player.PV.RPC(nameof(data.Player.UpdateCount), RpcTarget.All, room.PlayerCount);
+        data.Player.PV.RPC(nameof(data.Player.NoticeOnPlayerLeft), RpcTarget.All, otherPlayer.NickName);
+        data.Player.PV.RPC(nameof(data.Player.UpdateMemberList), RpcTarget.All, room.PlayerCount, GetMemberList(room.Players));
 
-        if (room.IsOpen == false && room.PlayerCount != room.MaxPlayers) { room.IsOpen = true; }
+        if (room.IsOpen == false && room.PlayerCount < room.MaxPlayers) { room.IsOpen = true; }
     }
     #endregion
+
+    string GetMemberList(Dictionary<int, Player> players)
+    {
+        StringBuilder sb = new();
+        foreach (var pl in players) { sb.Append(pl.Value.NickName + "\n"); }
+        return sb.ToString();
+    }
 }
